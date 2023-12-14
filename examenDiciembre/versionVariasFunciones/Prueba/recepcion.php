@@ -16,7 +16,7 @@
     if (isset($_POST['nombre'])) {
 
         //Número de Volumenes Totales (suma de stocks): X
-        function volumenes_totoles($datos_tomos)
+        function volumenes_totales($datos_tomos)
         {
 
             $cant_volumenes = 0;
@@ -30,23 +30,25 @@
         }
 
         //Cantidad de Unidades XLS Disponibles(Más de 300pag y ed colecionista):X
+    
         function cantidad_unidades_xls($datos_tomos)
         {
 
-            $cant_xmls = 0;
+            $cant_xml = 0;
 
             foreach ($datos_tomos as $tomo) {
                 $datos_tomo = explode(",", trim($tomo));
 
-                if ($datos_tomo[2] > 300 && $datos_tomo[5] == "S") {
-                    $cant_xmls += $datos_tomo[3];
-                }
+                if ($datos_tomo[2] > 300 && $datos_tomo[5] == "S")
+                    $cant_xml += $datos_tomo[3];
             }
-            return $cant_xmls;
+            return $cant_xml;
+
         }
 
         /*Hay Stock Colecionista: La función recibirá los almacenes, devolverá true si hay mas de
        10 tomos coleccionista en cada provincia y es tienda física.*/
+
         function hay_stock_coleccionista($datos_tomos)
         {
 
@@ -63,25 +65,36 @@
                 "jaen" => 0
             ];
 
-
             if (isset($_POST['fisica'])) {
                 foreach ($datos_tomos as $tomo) {
                     $datos_tomo = explode(",", trim($tomo));
 
                     if ($datos_tomo[5] == "S")
                         $arr_stock_coleccionista[$datos_tomo[6]] += $datos_tomo[3];
+
                 }
 
+                // En el código que muestras, el uso de => en la línea foreach ($arr_stock_coleccionista as $provincia => $stock) { 
+                // se utiliza en un bucle foreach de PHP para recorrer un array asociativo.
+    
+                //     En PHP, cuando utilizas foreach para iterar sobre un array, puedes obtener tanto la clave como el valor 
+                // de cada elemento del array. La estructura general es foreach ($array as $clave => $valor). En este caso particular:
+    
+                //     $provincia es la variable que tomará el valor de la clave (en este caso, el nombre de la provincia).
+                //     $stock es la variable que tomará el valor correspondiente a esa clave en el array $arr_stock_coleccionista.
+                //     Dentro del bucle foreach, se está verificando si el valor del stock de cada provincia es menor que 10. Si alguna 
+                // de las provincias tiene un stock inferior a 10 unidades, se establece $result como falso, lo que indica que no se cumple la 
+                // condición de tener más de 10 unidades en stock para cada provincia en la categoría "coleccionista".
+    
+                //     Fuera del bucle foreach, si no se cumple la condición inicial (es decir, si $_POST["fisica"] no está definido o es nulo), se asigna directamente $result como falso sin la necesidad de recorrer el array, ya que se asume que no se cumplirá la condición sin importar los valores de stock en cada provincia.
                 foreach ($arr_stock_coleccionista as $provincia => $stock) {
                     if ($stock < 10)
-                        $stock = false;
+                        $result = true;
                 }
-            } else {
+            } else
                 $result = false;
-                return $result;
-            }
+            return $result;
         }
-
 
         /* Stock por Provincia: (calculará y la suma de los stock de los tomos de cada provincia, se
             calculará utilizando una función que reciba los datos de los tomos y devuelva un array
@@ -89,6 +102,7 @@
             todas las provincias)*/
         function stock_por_provincia($datos_tomos)
         {
+
             $arr_stock = [
                 "cadiz" => 0,
                 "malaga" => 0,
@@ -107,7 +121,6 @@
             }
             return $arr_stock;
         }
-
 
 
         /* Cumple Cercanía : Utilizar una función que recibe los datos de los tomos y la provincia de
@@ -135,7 +148,6 @@
                     $cumple = false;
             }
             return $cumple;
-
         }
 
 
@@ -143,6 +155,7 @@
     manga y comprueba si en los almacenes de las provincias colindantes a la tienda hay stock
     de dicho manga, para saber si es el manga, tiene que buscar el nombre del manga y estar
     presente en el nombre o en la descripción. Devuelve el número de stock disponible.*/
+
         function stock_tomo($datos_tomos, $provincia, $nombre_tomo)
         {
 
@@ -162,14 +175,18 @@
             foreach ($datos_tomos as $tomo) {
                 $datos_tomo = explode(",", trim($tomo));
 
-                if (str_contains($datos_tomo[0], $nombre_tomo) || str_contains($datos_tomo[1], $nombre_tomo)) {
+                // La función str_contains() en PHP se utiliza para verificar si una cadena de texto contiene otra cadena específica.
+                // Esta función devuelve true si la cadena objetivo contiene la cadena de búsqueda y false en caso contrario.
+                if(str_contains($datos_tomo[0], $nombre_tomo) || str_contains($datos_tomo[1], $nombre_tomo)){
                     if ($datos_tomo[6] == $provincia || in_array($datos_tomo[6], $arr_cercanias[$provincia]))
-                        $stock_disponible += $datos_tomo[3];
-                    echo $provincia . "|" . $datos_tomo[6];
+                    $stock_disponible += $datos_tomo[3];
+                echo $provincia . "|" . $datos_tomo[6];
                 }
-                return $stock_disponible;
+
             }
+            return $stock_disponible;
         }
+
         echo "<h1>Recepción de datos</h1>";
 
         // Recojo los datos de todos los tomos
